@@ -17,40 +17,39 @@
 :Source: bitbucket.org_
 :Bug tracker: `bitbucket.org/issues <http://bitbucket.org/iElectric/minificationwebhelpers/issues/>`_
 
-Consider the MinificationWebHelpers_ as an extension to WebHelpers_.
+Consider the MinificationWebHelpers_ an extension to WebHelpers_.
 
-Basicly it adds these options to the WebHelpers_ javascript_link_
+Basicaly MinificationWebHelpers_ adds following options to the WebHelpers_ javascript_link_
 and stylesheet_link_ functions:
 
-* **minified** (bool): Minifies, ie, reduces as much as possible each of the files
+* **minified** (bool): Minifies/reduces as much as possible each of the files
   passed to it's minimum size to reduce page load times.
 * **combined** (bool): Joins all files passed into a single one to reduce server
   requests which in turn reduces page load times.
-* **beaker_kwargs** (dict): override default arguments that will be passed to `beaker_cache`.  `beaker_kwargs.update()` is issued on default arguments.
-* **combined_filename** (string): Name of the filename that will be used in conjunction with combined=True
+* **beaker_kwargs** (dict): override default arguments that will be passed to `beaker_cache`.
+* **combined_filename** (string): Name of the filename that will be used in conjunction with `combined=True`
+
+For complete list of additional parameters reffer to :func:`base_link`.
+
+.. note:: Running Pylons/TG application in debug mode will force minfied and combined options off.
+
+.. note:: For an up-to-date read of the documentation, always reffer to `offical documentation page on site`__.  
+
+
+Details about implementation
+----------------------------
+
+MinificationWebHelpers_ cache your javascript and css files through Beaker_'s
+``@beaker.cache`` decorator. Default parameters passed to beaker cache:
 
 .. code-block:: python
 
-	# default args
 	beaker_kwargs = dict(key='sources', expire='never', type='memory')
 
-For an up-to-date read of the documentation, please `read the documentation
-page on site`__.
-
-
-.. note::
-	 
-	 Running Pylons/TG application in debug mode will force minfied and combined options off.
-
-
-
-Terminology
------------
-
-MinificationWebHelpers_ cache your javascript and css files through Beaker_'s
-``@beaker.cache`` decorator.
-
 Javascript minification is achieved through Python port of jsmin_.
+
+MinificationWebHelpers_ maps HTTP URLs to filesystem path by exaiming pylons config for `static_files`.
+
 
 Usage
 -----
@@ -81,6 +80,7 @@ Then, inside a template you could have:
 
 The above would mean ``file1.js`` and ``file2.js`` would be combined and then
 minimized (same story for css files).
+
 
 Instalation
 -----------

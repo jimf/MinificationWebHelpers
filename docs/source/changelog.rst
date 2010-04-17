@@ -1,3 +1,8 @@
+17-04-2010: Domen Kozar v0.3.6
+------------------------------
+
+	* added `strip_prefix` parameter to :func:`minwebhelpers.base_link`
+
 28-09-2009: Domen Kozar v0.3.5
 ------------------------------
 

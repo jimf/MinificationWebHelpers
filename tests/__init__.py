@@ -48,6 +48,12 @@ class MinificationTestCase(TestCase):
         f.write(contents)
         f.close()
 
+    def test_strip_prefix(self):
+        js_source = javascript_link('/TEST/deep/a.js', '/TEST/b.js', combined=True, minified=True, strip_prefix="/TEST")
+        css_source = stylesheet_link('/TEST/deep/a.css', '/TEST/b.css', combined=True, minified=True, strip_prefix="/TEST")
+        self.assert_('"/a.b.COMBINED.min.css"' in css_source)
+        self.assert_('"/a.b.COMBINED.min.js"' in js_source)
+
     def test_paths(self):
         """Testing if paths are constructed correctly"""
         # minify and combine
@@ -55,7 +61,7 @@ class MinificationTestCase(TestCase):
         css_source = stylesheet_link('/deep/a.css', '/b.css', combined=True, minified=True)
         self.assert_('"/a.b.COMBINED.min.css"' in css_source)
         self.assert_('"/a.b.COMBINED.min.js"' in js_source)
-        
+
         # combine
         js_source = javascript_link('/deep/a.js', '/b.js', combined=True)
         css_source = stylesheet_link('/deep/a.css', '/b.css', combined=True)
@@ -95,7 +101,7 @@ class MinificationTestCase(TestCase):
         css_source = stylesheet_link('/js/1.css', '/jquery/2.css', combined=True, minified=True)
         self.assert_('"/1.2.COMBINED.min.css"' in css_source)
         self.assert_('"/1.2.COMBINED.min.js"' in js_source)
-    
+
     def test_specified_filename(self):
         js_source = javascript_link('/js/1.js', '/jquery/2.js', combined=True, minified=True, combined_filename="w00t_1")
         css_source = stylesheet_link('/js/1.css', '/jquery/2.css', combined=True, minified=True, combined_filename="foobar")

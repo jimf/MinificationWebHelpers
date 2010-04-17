@@ -36,7 +36,7 @@ def generate_timestamp(timestamp):
 
 def combine_sources(sources, ext, fs_root, filename=False, timestamp=False):
     """Use utilities to combine two or more files together.
-    
+
     :param sources: Paths of source files
     :param ext: Type of files
     :param fs_root: Root of file (normally public dir)
@@ -65,9 +65,11 @@ def combine_sources(sources, ext, fs_root, filename=False, timestamp=False):
         # build a master file with all contents
         full_source = path.join(fs_root, (source).lstrip('/'))
         f = open(full_source, 'r')
-        js_buffer.write(f.read())
-        js_buffer.write('\n')
-        f.close()
+        try:
+            js_buffer.write(f.read())
+            js_buffer.write('\n')
+        finally:
+            f.close()
 
     # glue a new name and generate path to it
     if filename:
@@ -77,14 +79,16 @@ def combine_sources(sources, ext, fs_root, filename=False, timestamp=False):
 
     # write the combined file
     f = open(fpath, 'w')
-    f.write(js_buffer.getvalue())
-    f.close()
+    try:
+        f.write(js_buffer.getvalue())
+    finally:
+        f.close()
 
     return [path.join(base, fname)]
 
 def minify_sources(sources, ext, fs_root='', timestamp=False):
     """Use utilities to minify javascript or css.
-    
+
     :param sources: Paths of source files
     :param ext: Type of files
     :param fs_root: root of file (normally public dir)
@@ -110,18 +114,20 @@ def minify_sources(sources, ext, fs_root='', timestamp=False):
 
         f_minified_source = open(minified, 'w')
 
-        # minify js source (read stream is auto-closed inside)
-        if 'js' in ext:
-            js_minify.minify(open(full_source, 'r'), f_minified_source)
+        try:
+            # minify js source (read stream is auto-closed inside)
+            if 'js' in ext:
+                js_minify.minify(open(full_source, 'r'), f_minified_source)
 
-        # minify css source
-        if 'css' in ext:
-            sheet = cssutils.parseFile(full_source)
-            sheet.setSerializer(CSSUtilsMinificationSerializer())
-            cssutils.ser.prefs.useMinified()
-            f_minified_source.write(sheet.cssText)
+            # minify css source
+            if 'css' in ext:
+                sheet = cssutils.parseFile(full_source)
+                sheet.setSerializer(CSSUtilsMinificationSerializer())
+                cssutils.ser.prefs.useMinified()
+                f_minified_source.write(sheet.cssText)
+        finally:
+            f_minified_source.close()
 
-        f_minified_source.close()
         minified_sources.append(no_ext_source + ext + generate_timestamp(timestamp))
 
     return minified_sources
@@ -139,6 +145,7 @@ def base_link(ext, *sources, **options):
     :param beaker_kwargs: Beaker options to pass to caching decorators
     :param combined_filename: filename that will be used when combining files
     :param timestamp: append `time.time` timestamp to file, eg. test.js?t=123012343
+    :param strip_prefix: prefix to be stripped from `sources` URL list
     :type ext: string
     :type sources: string
     :type combined_filename: keyword arg
@@ -146,8 +153,9 @@ def base_link(ext, *sources, **options):
     :type minified: keyword arg
     :type beaker_kwargs: dict
     :type timestamp: bool
+    :type strip_prefix: string
     :returns: HTML source code
-    
+
     .. versionadded:: 0.3.1
         `beaker_kwargs` parameter
 
@@ -156,11 +164,15 @@ def base_link(ext, *sources, **options):
 
     .. versionadded:: 0.3.5
         `timestamp` parameter
+
+    .. versionadded:: 0.3.6
+        `strip_prefix` parameter
     """
     filename = options.pop('combined_filename', False)
     combined = options.pop('combined', False)
     minified = options.pop('minified', False)
     timestamp = options.pop('timestamp', False)
+    strip_prefix = options.pop('strip_prefix', False)
     beaker_options = options.pop('beaker_kwargs', False)
     fs_root = config.get('pylons.paths').get('static_files')
 
@@ -171,6 +183,9 @@ def base_link(ext, *sources, **options):
     if not (config.get('debug', False) or options.get('builtins', False)):
         if beaker_options:
             beaker_kwargs.update(beaker_options)
+
+        if strip_prefix:
+            sources = [source.replace(strip_prefix, '', 1) for source in sources]
 
         if combined:
             # use beaker_cache decorator to cache the return value
@@ -190,21 +205,21 @@ def base_link(ext, *sources, **options):
 
 def javascript_link(*sources, **options):
     """Calls :func:`base_link` with first argument ``js``
-    
+
     All other arguments are passed on.
     """
     return base_link('js', *sources, **options)
 
 def stylesheet_link(*sources, **options):
     """Calls :func:`base_link` with first argument ``css``
-    
+
     All other arguments are passed on.
     """
     return base_link('css', *sources, **options)
 
 
 class CSSUtilsMinificationSerializer(CSSSerializer):
-    
+
     DOT_ZERO_REGEX = re.compile(r'(?<=[^\d])0(\.\d+)')
     ZERO_PX_REGEX = re.compile(r'([^\d][0])(?:px|em|pt)')
 
