@@ -51,8 +51,8 @@ class MinificationTestCase(TestCase):
     def test_strip_prefix(self):
         js_source = javascript_link('/TEST/deep/a.js', '/TEST/b.js', combined=True, minified=True, strip_prefix="/TEST")
         css_source = stylesheet_link('/TEST/deep/a.css', '/TEST/b.css', combined=True, minified=True, strip_prefix="/TEST")
-        self.assert_('"/a.b.COMBINED.min.css"' in css_source)
-        self.assert_('"/a.b.COMBINED.min.js"' in js_source)
+        self.assert_('"/TEST/a.b.COMBINED.min.css"' in css_source)
+        self.assert_('"/TEST/a.b.COMBINED.min.js"' in js_source)
 
     def test_paths(self):
         """Testing if paths are constructed correctly"""

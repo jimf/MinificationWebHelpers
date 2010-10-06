@@ -175,6 +175,7 @@ def base_link(ext, *sources, **options):
     strip_prefix = options.pop('strip_prefix', False)
     beaker_options = options.pop('beaker_kwargs', False)
     fs_root = config.get('pylons.paths').get('static_files')
+    stripped_sources = []
 
     if filename and not combined:
         raise ValueError("combined_filename=True specifies filename for"
@@ -185,7 +186,11 @@ def base_link(ext, *sources, **options):
             beaker_kwargs.update(beaker_options)
 
         if strip_prefix:
-            sources = [source.replace(strip_prefix, '', 1) for source in sources]
+            stripped_sources = [source.replace(strip_prefix, '', 1)
+                                for source in sources
+                                if source.startswith(strip_prefix)]
+            if stripped_sources:
+                sources = stripped_sources
 
         if combined:
             # use beaker_cache decorator to cache the return value
@@ -197,6 +202,9 @@ def base_link(ext, *sources, **options):
             # use beaker_cache decorator to cache the return value
             sources = beaker_cache(**beaker_kwargs)\
                 (minify_sources)(list(sources), '.min.' + ext, fs_root, timestamp)
+
+        if stripped_sources:
+            sources = [strip_prefix + source for source in sources]
 
     if 'js' in ext:
         return __javascript_link(*sources, **options)
