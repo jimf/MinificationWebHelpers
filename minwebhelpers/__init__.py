@@ -206,6 +206,13 @@ def base_link(ext, *sources, **options):
         if stripped_sources:
             sources = [strip_prefix + source for source in sources]
 
+        if timestamp:
+            for idx, source in enumerate(sources):
+                if source.find('?t=') > 0:
+                    parts = source.replace('?t=', '.').split('.')
+                    parts[-2], parts[-1] = parts[-1], parts[-2]
+                    sources[idx] = '.'.join(parts)
+
     if 'js' in ext:
         return __javascript_link(*sources, **options)
     if 'css' in ext:

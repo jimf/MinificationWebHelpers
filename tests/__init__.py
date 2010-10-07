@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 import time
 from tempfile import mkdtemp
 from shutil import rmtree
@@ -136,6 +137,12 @@ class MinificationTestCase(TestCase):
 
         # cleanup 
         minwebhelpers.beaker_cache = beaker_cache
+
+    def test_timestamp_inserted_before_extension(self):
+        css_source = stylesheet_link('/deep/a.css', '/b.css', combined=True, minified=True, timestamp=True)
+        js_source = javascript_link('/deep/a.js', '/b.js', combined=True, minified=True, timestamp=True)
+        self.assert_(re.search(r'.*\.COMBINED\.min\.[0-9]+\.css', css_source))
+        self.assert_(re.search(r'.*\.COMBINED\.min\.[0-9]+\.js', js_source))
 
 ## CSS STUFF
 
