@@ -122,7 +122,7 @@ def minify_sources(sources, ext, fs_root='', timestamp=False):
             # minify css source
             if 'css' in ext:
                 sheet = cssutils.parseFile(full_source)
-                sheet.setSerializer(CSSUtilsMinificationSerializer())
+                cssutils.setSerializer(CSSUtilsMinificationSerializer())
                 cssutils.ser.prefs.useMinified()
                 f_minified_source.write(sheet.cssText)
         finally:
