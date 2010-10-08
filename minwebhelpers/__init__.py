@@ -30,7 +30,7 @@ beaker_kwargs = dict(key='sources',
 
 def generate_timestamp(timestamp):
     if timestamp:
-        return '?t=' + str(int(time.time()))
+        return '.' + str(int(time.time()))
     else:
         return ''
 
@@ -74,7 +74,9 @@ def combine_sources(sources, ext, fs_root, filename=False, timestamp=False):
     # glue a new name and generate path to it
     if filename:
         names = [filename]
-    fname = '.'.join(names + ['COMBINED', ext + generate_timestamp(timestamp)])
+    if timestamp:
+        names.append(generate_timestamp(timestamp)[1:])
+    fname = '.'.join(names + ['COMBINED', ext])
     fpath = path.join(fs_root, (base).lstrip('/'), fname)
 
     # write the combined file
@@ -128,7 +130,10 @@ def minify_sources(sources, ext, fs_root='', timestamp=False):
         finally:
             f_minified_source.close()
 
-        minified_sources.append(no_ext_source + ext + generate_timestamp(timestamp))
+        if no_ext_source.endswith('COMBINED'):
+            minified_sources.append(no_ext_source + ext)
+        else:
+            minified_sources.append(no_ext_source + generate_timestamp(timestamp) + ext)
 
     return minified_sources
 
@@ -205,13 +210,6 @@ def base_link(ext, *sources, **options):
 
         if stripped_sources:
             sources = [strip_prefix + source for source in sources]
-
-        if timestamp:
-            for idx, source in enumerate(sources):
-                if source.find('?t=') > 0:
-                    parts = source.replace('?t=', '.').split('.')
-                    parts[-2], parts[-1] = parts[-1], parts[-2]
-                    sources[idx] = '.'.join(parts)
 
     if 'js' in ext:
         return __javascript_link(*sources, **options)

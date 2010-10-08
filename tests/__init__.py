@@ -138,11 +138,19 @@ class MinificationTestCase(TestCase):
         # cleanup 
         minwebhelpers.beaker_cache = beaker_cache
 
-    def test_timestamp_inserted_before_extension(self):
-        css_source = stylesheet_link('/deep/a.css', '/b.css', combined=True, minified=True, timestamp=True)
-        js_source = javascript_link('/deep/a.js', '/b.js', combined=True, minified=True, timestamp=True)
-        self.assert_(re.search(r'.*\.COMBINED\.min\.[0-9]+\.css', css_source))
-        self.assert_(re.search(r'.*\.COMBINED\.min\.[0-9]+\.js', js_source))
+    def test_timestamp_inserted_before_extensions(self):
+        css_source1 = stylesheet_link('/deep/a.css', '/b.css', combined=True, minified=True, timestamp=True)
+        js_source1 = javascript_link('/deep/a.js', '/b.js', combined=True, minified=True, timestamp=True)
+        css_source2 = stylesheet_link('/deep/a.css', minified=True, timestamp=True)
+        js_source2 = javascript_link('/deep/a.js', minified=True, timestamp=True)
+        css_source3 = stylesheet_link('/deep/a.css', '/b.css', combined=True, timestamp=True)
+        js_source3 = javascript_link('/deep/a.js', '/b.js', combined=True, timestamp=True)
+        self.assert_(re.search(r'/a\.b\.[0-9]+\.COMBINED\.min\.css', css_source1))
+        self.assert_(re.search(r'/a\.b\.[0-9]+\.COMBINED\.min\.js', js_source1))
+        self.assert_(re.search(r'/a\.[0-9]+\.min\.css', css_source2))
+        self.assert_(re.search(r'/a\.[0-9]+\.min\.js', js_source2))
+        self.assert_(re.search(r'/a\.b\.[0-9]+\.COMBINED\.css', css_source3))
+        self.assert_(re.search(r'/a\.b\.[0-9]+\.COMBINED\.js', js_source3))
 
 ## CSS STUFF
 
